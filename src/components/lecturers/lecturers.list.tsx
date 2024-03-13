@@ -2,10 +2,10 @@ import { Theme, useMediaQuery } from "@mui/material"
 import { List, SimpleList, Datagrid, TextField, ShowButton } from "react-admin"
 
 
-const LecturerList = () => {
+export default function LecturerList()  {
   const isSmall = useMediaQuery<Theme>(theme => theme.breakpoints.down('sm'))
   return (
-    <List>
+    <List exporter={false}>
       {
         isSmall ? 
         <SimpleList
@@ -18,6 +18,7 @@ const LecturerList = () => {
           <TextField source="id" />
           <TextField source="name" />
           <TextField source="email" />
+          <TextField source="lab.name" />
           <>
             <ShowButton />
           </>
@@ -26,5 +27,3 @@ const LecturerList = () => {
     </List>
   )
 }
-
-export default LecturerList;
