@@ -8,6 +8,8 @@ const client = new Auth0Client({
     scope: "openid profile email",
     redirect_uri: import.meta.env.VITE_LOGIN_REDIRECT_URL,
   },
+  useRefreshTokens: true,
+  cacheLocation: "localstorage",
 });
 
 export default client;

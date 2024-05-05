@@ -1,16 +1,15 @@
 import { AuthProvider, UserIdentity, Identifier } from "react-admin";
 import client from "./auth-client";
+import { client as apolloClient } from "./data-provider";
 
 const authProvider: AuthProvider = {
   async login() {
     console.log("called login");
     await client.loginWithRedirect();
-
-    const user = await client.getUser();
-
-    console.log(`user: `, user);
-    console.log("done login with redirect");
+    // const user = await client.getUser();
+    // console.log(`user: `, user);
   },
+
   async logout() {
     console.log("called logout");
     await client.logout({
@@ -18,6 +17,7 @@ const authProvider: AuthProvider = {
         returnTo: import.meta.env.VITE_LOGOUT_REDIRECT_URL,
       },
     });
+    await apolloClient.resetStore();
   },
 
   async checkAuth() {
@@ -26,7 +26,7 @@ const authProvider: AuthProvider = {
     const isAuthenticated = await client.isAuthenticated();
 
     if (isAuthenticated) {
-      return Promise.resolve();
+      return;
     }
 
     // localStorage.setItem("react-admin-auth0", window.location.href);
@@ -45,12 +45,13 @@ const authProvider: AuthProvider = {
             redirect_uri: import.meta.env.VITE_LOGIN_REDIRECT_URL,
           },
         });
-      }, 3000); // Change this to 500 to hide the loading page
+      }, 3000);
     });
   },
 
   async checkError({ status }) {
     console.log("called checError");
+    console.log("status: ", status);
     if (status === 401 || status === 403) {
       throw new Error("Unauthorized");
     }
@@ -76,20 +77,28 @@ const authProvider: AuthProvider = {
     const query = window.location.search;
 
     if (!query.includes("code=") && !query.includes("state=")) {
-      console.log("does not includec code and state for some reason");
+      // console.log("does not includec code and state for some reason");
       throw new Error("Failed to handle login callback.");
     }
 
-    console.log("include code and state for some reason");
-
     await client.handleRedirectCallback();
-
-    return { redirectTo: "/profile" };
+    return { redirectTo: "/lecturers" };
   },
 
   async getPermissions() {
     console.log("called getPermissions");
-    return ["editor", "admin"];
+    const isAuthenticated = await client.isAuthenticated();
+    if (!isAuthenticated) {
+      return;
+    }
+
+    const user = await client.getUser();
+    console.log("getUser: ", user);
+    if (user?.email === import.meta.env.VITE_MY_EMAIL) {
+      return "admin";
+    } else {
+      return user?.email;
+    }
   },
 };
 
