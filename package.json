@@ -15,6 +15,8 @@
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.0",
     "@mui/material": "^5.15.12",
+    "@mui/x-date-pickers": "^7.2.0",
+    "dayjs": "^1.11.10",
     "graphql": "^16.8.1",
     "ra-auth-auth0": "^1.1.1",
     "ra-i18n-polyglot": "^4.16.5",
@@ -22,11 +24,13 @@
     "react": "^18.2.0",
     "react-admin": "^4.16.4",
     "react-dom": "^18.2.0",
+    "react-hook-form": "^7.51.3",
     "react-router-dom": "^6.21.1"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
+    "@types/react-is": "^18.2.4",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
     "@vitejs/plugin-react": "^4.2.1",
