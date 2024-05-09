@@ -10,7 +10,7 @@ import {
 
 export default function SubjectList() {
   const { permissions } = usePermissions();
-  console.log("permissions: ", permissions);
+  // console.log("permissions: ", permissions);
   return (
     <List exporter={false}>
       <Datagrid bulkActionButtons={false}>
@@ -21,12 +21,16 @@ export default function SubjectList() {
         <EditButton />
         <WithRecord
           render={(record) => {
-            console.log("record.editor: ", record.editor);
+            // console.log("record.editor: ", record.editor);
             return (
               <DeleteWithConfirmButton
                 title="delete subject"
                 content="Are u sure?"
-                disabled={permissions !== record.editor}
+                disabled={
+                  permissions !== record.editor || permissions !== "admin"
+                    ? false
+                    : true
+                }
               />
             );
           }}

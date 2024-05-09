@@ -2,8 +2,6 @@ import {
   Avatar,
   Box,
   Card,
-  CardContent,
-  CardHeader,
   Chip,
   Dialog,
   DialogActions,
@@ -34,7 +32,7 @@ import CoursesByLecturerList from "./coursesbylecturer.list";
 export default function LecturerShow() {
   const { id } = useParams();
   // const  redirect  = useRedirect();
-  console.log("lecturer show render called");
+  // console.log("lecturer show render called");
   const navigate = useNavigate();
   const match = useMatch("/lecturers/:id/courses/create");
 
@@ -100,7 +98,7 @@ export default function LecturerShow() {
         </Stack>
       </Card>
 
-      <CoursesByLecturerList id={id} />
+      <CoursesByLecturerList id={id} open={open} />
 
       <ReviewsByLecturerList id={id} />
 
@@ -115,10 +113,11 @@ export default function LecturerShow() {
 }
 
 function AssignCourseFormDialog({ id, navigate, open, setOpen }) {
-  const [create, { isLoading, error }] = useCreate();
+  const [create] = useCreate();
 
   const handleClose = () => {
-    navigate(`/lecturers/${id}/show`, { replace: true });
+    // navigate(`/lecturers/${id}/show`, { replace: true });
+    navigate(`/lecturers/${id}/show`);
     setOpen(false);
   };
 
@@ -132,16 +131,22 @@ function AssignCourseFormDialog({ id, navigate, open, setOpen }) {
           <SimpleForm
             sx={{ width: 300 }}
             onSubmit={(data) => {
-              console.log("on submit i was called");
-              console.log("data: ", data);
-              create("courses", {
-                data: {
-                  year: data.year.$d,
-                  semester: data.semester,
-                  subject: data.subject.id,
-                  lecturer: id,
+              create(
+                "courses",
+                {
+                  data: {
+                    year: data.year.$d,
+                    semester: data.semester,
+                    subject: data.subject.id,
+                    lecturer: id,
+                  },
                 },
-              });
+                {
+                  onSettled: () => {
+                    handleClose();
+                  },
+                }
+              );
             }}
           >
             <SelectInput

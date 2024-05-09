@@ -13,8 +13,6 @@ import {
   usePermissions,
   DeleteWithConfirmButton,
 } from "react-admin";
-import authClient from "../../auth-client";
-import { useEffect } from "react";
 
 function FirstColumnField() {
   const record = useRecordContext();
@@ -58,7 +56,11 @@ export default function LecturerList() {
               <DeleteWithConfirmButton
                 title="Delete lecturers"
                 content="Are you sure "
-                disabled={permissions !== record.editor}
+                disabled={
+                  permissions !== record.editor || permissions !== "admin"
+                    ? false
+                    : true
+                }
               />
             );
           }}

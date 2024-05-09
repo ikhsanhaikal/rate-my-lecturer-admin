@@ -18,14 +18,14 @@ import { Card } from "@mui/material";
 export default function CourseEdit() {
   const { id, cid } = useParams();
   const transform = (data, { previousData }) => {
-    console.log("data: ", data);
+    // console.log("data: ", data);
     const transformed = {
       id: cid,
       subject: data.subject.id,
       year: data.year,
       semester: data.semester,
     };
-    console.log("transformed data: ", transformed);
+    // console.log("transformed data: ", transformed);
     return transformed;
   };
   const {

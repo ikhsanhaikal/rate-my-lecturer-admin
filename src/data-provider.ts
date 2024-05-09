@@ -34,10 +34,10 @@ const authLink = setContext(async (_, { headers }) => {
   // eslint-disable-next-line no-useless-catch
   try {
     const token = await authClient.getTokenSilently({
-      // authorizationParams: {
-      // audience: "https://dev-jkakhj2ja4i553ok.us.auth0.com/api/v2/",
-      // scope: "read:current_user",
-      // },
+      authorizationParams: {
+        audience: "https://dev-jkakhj2ja4i553ok.us.auth0.com/api/v2/",
+        // scope: "read:current_user",
+      },
     });
     // console.log("token: ", token);
     return {
@@ -51,18 +51,19 @@ const authLink = setContext(async (_, { headers }) => {
     throw error;
   }
 });
+// console.log(`VITE_API_URL: `, import.meta.env.VITE_API_URL);
 const link = from([
   removeTypenameLink,
-  new HttpLink({
-    uri: "http://127.0.0.1:8080/graphql",
-    // credentials: "include",
-  }),
-  // authLink.concat(
-  //   new HttpLink({
-  //     uri: "http://127.0.0.1:8080/graphql",
-  //     credentials: "include",
-  //   })
-  // ),
+  // new HttpLink({
+  // uri: "http://127.0.0.1:8080/graphql",
+  // credentials: "include",
+  // }),
+  authLink.concat(
+    new HttpLink({
+      uri: `${import.meta.env.VITE_API_URL}/graphql`,
+      credentials: "include",
+    })
+  ),
 ]);
 
 const client = new ApolloClient({
@@ -98,7 +99,7 @@ const resources: ExpectedSchema = {
   comment
   rating`,
 };
-type Sort = "ASC" | "DESC";
+
 const dataProvider: DataProvider = {
   getList: async function (
     resource: string,
@@ -141,7 +142,7 @@ const dataProvider: DataProvider = {
         });
       });
     } catch (error) {
-      console.log("catch: ", error);
+      // console.log("catch: ", error);
       return Promise.reject(error);
     }
   },
@@ -150,7 +151,7 @@ const dataProvider: DataProvider = {
     params: GetOneParams
   ): Promise<GetOneResult> {
     try {
-      console.log(`params :`, params);
+      // console.log(`params :`, params);
       const result = await client.query({
         query: gql`
         query($id: Int!) {
@@ -164,7 +165,7 @@ const dataProvider: DataProvider = {
         },
       });
 
-      console.log("result: ", result);
+      // console.log("result: ", result);
       return new Promise((resolve) => {
         resolve({
           data: {
@@ -180,7 +181,7 @@ const dataProvider: DataProvider = {
     resource: string,
     params: CreateParams
   ): Promise<CreateResult> {
-    console.log("params: ", params);
+    // console.log("params: ", params);
     const result = await client.mutate({
       mutation: gql`
         mutation($input: Create${
@@ -205,7 +206,7 @@ const dataProvider: DataProvider = {
     resource: string,
     params: DeleteParams
   ): Promise<DeleteResult> {
-    console.log(`resources: `, resource);
+    // console.log(`resources: `, resource);
 
     const result = await client.mutate({
       mutation: gql`
@@ -226,7 +227,7 @@ const dataProvider: DataProvider = {
     resource: string,
     params: UpdateParams
   ): Promise<UpdateResult> {
-    console.log("params: ", params);
+    // console.log("params: ", params);
     const result = await client.mutate({
       mutation: gql`
         mutation($input: Update${
@@ -251,7 +252,7 @@ const dataProvider: DataProvider = {
     resource: string,
     params: DeleteManyParams
   ): Promise<DeleteManyResult> {
-    console.log(`resource: ${resource}`);
+    // console.log(`resource: ${resource}`);
     const result = await client.mutate({
       mutation: gql`
         mutation($ids: [Int!]) {

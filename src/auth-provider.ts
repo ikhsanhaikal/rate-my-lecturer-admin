@@ -4,14 +4,14 @@ import { client as apolloClient } from "./data-provider";
 
 const authProvider: AuthProvider = {
   async login() {
-    console.log("called login");
+    // console.log("called login");
     await client.loginWithRedirect();
     // const user = await client.getUser();
     // console.log(`user: `, user);
   },
 
   async logout() {
-    console.log("called logout");
+    // console.log("called logout");
     await client.logout({
       logoutParams: {
         returnTo: import.meta.env.VITE_LOGOUT_REDIRECT_URL,
@@ -21,7 +21,7 @@ const authProvider: AuthProvider = {
   },
 
   async checkAuth() {
-    console.log("---called checkAuth---");
+    // console.log("---called checkAuth---");
 
     const isAuthenticated = await client.isAuthenticated();
 
@@ -39,7 +39,6 @@ const authProvider: AuthProvider = {
 
     return new Promise(() => {
       setTimeout(() => {
-        //   // localStorage.getItem("auth") ? resolve() : reject();
         client.loginWithRedirect({
           authorizationParams: {
             redirect_uri: import.meta.env.VITE_LOGIN_REDIRECT_URL,
@@ -50,7 +49,7 @@ const authProvider: AuthProvider = {
   },
 
   async checkError({ status }) {
-    console.log("called checError");
+    // console.log("called checError");
     console.log("status: ", status);
     if (status === 401 || status === 403) {
       throw new Error("Unauthorized");
@@ -58,10 +57,10 @@ const authProvider: AuthProvider = {
   },
 
   async getIdentity() {
-    console.log("called getIdentity");
+    // console.log("called getIdentity");
     if (await client.isAuthenticated()) {
       const user = await client.getUser();
-      console.log(`getIdentity() user: `, user);
+      // console.log(`getIdentity() user: `, user);
       const identity: UserIdentity = {
         id: user?.email as unknown as Identifier,
         fullName: user?.name,
@@ -86,14 +85,14 @@ const authProvider: AuthProvider = {
   },
 
   async getPermissions() {
-    console.log("called getPermissions");
+    // console.log("called getPermissions");
     const isAuthenticated = await client.isAuthenticated();
     if (!isAuthenticated) {
       return;
     }
 
     const user = await client.getUser();
-    console.log("getUser: ", user);
+    // console.log("getUser: ", user);
     if (user?.email === import.meta.env.VITE_MY_EMAIL) {
       return "admin";
     } else {

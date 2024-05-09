@@ -92,7 +92,11 @@ export default function LabList() {
                 <DeleteWithConfirmButton
                   title="delete lab"
                   content="Are u sure?"
-                  disabled={permissions !== record.editor}
+                  disabled={
+                    permissions !== record.editor || permissions !== "admin"
+                      ? false
+                      : true
+                  }
                 />
               );
             }}
