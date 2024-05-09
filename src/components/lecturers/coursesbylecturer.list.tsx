@@ -1,4 +1,4 @@
-import { gql } from "@apollo/client";
+import { gql, useQuery } from "@apollo/client";
 import { Card, CardHeader, CardContent, Rating, Stack } from "@mui/material";
 import { useEffect, useState } from "react";
 import {
@@ -12,13 +12,35 @@ import {
   EditButton,
   Button,
 } from "react-admin";
-import { client } from "../../data-provider";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
+const GET_COURSES_BY_LECTURER = gql`
+  query ($id: Int!, $page: Int, $limit: Int) {
+    courses_by_lecturer(id: $id, page: $page, limit: $limit) {
+      data {
+        id
+        subject {
+          id
+          name
+        }
+        semester
+        year
+        lecturer {
+          id
+          name
+          email
+        }
+      }
+      total
+    }
+  }
+`;
 export default function CoursesByLecturerList({
   id,
+  open,
 }: {
   id: string | undefined;
+  open: boolean;
 }) {
   const [coursesPagination, setCoursesPagination] = useState({
     page: 1,
@@ -26,49 +48,27 @@ export default function CoursesByLecturerList({
   });
 
   const navigate = useNavigate();
-  const [courses, setCourses] = useState({ data: [], total: 0, loading: true });
-  useEffect(() => {
-    (async function () {
-      const result = await client.query({
-        query: gql`
-          query ($id: Int!, $page: Int, $limit: Int) {
-            courses_by_lecturer(id: $id, page: $page, limit: $limit) {
-              data {
-                id
-                subject {
-                  id
-                  name
-                }
-                semester
-                year
-                lecturer {
-                  id
-                  name
-                  email
-                }
-              }
-              total
-            }
-          }
-        `,
-        variables: {
-          id: id,
-          limit: coursesPagination.perPage,
-          page: coursesPagination.page,
-        },
-      });
-
-      const data = result.data[`courses_by_lecturer`].data;
-      const total = result.data[`courses_by_lecturer`].total;
-      setCourses({ data, total, loading: result.loading });
-    })();
-  }, [coursesPagination, id]);
+  const {
+    loading,
+    data: courses,
+    refetch,
+  } = useQuery(GET_COURSES_BY_LECTURER, {
+    variables: {
+      id: id,
+      limit: coursesPagination.perPage,
+      page: coursesPagination.page,
+    },
+  });
 
   const coursesContext = useList({
-    data: courses.data,
+    data: courses ? courses["courses_by_lecturer"].data : [],
     perPage: 5,
-    isLoading: courses.loading,
+    isLoading: loading,
   });
+
+  if (loading) {
+    return <>loading...</>;
+  }
 
   return (
     <Card variant="outlined">
@@ -87,7 +87,10 @@ export default function CoursesByLecturerList({
       />
       <CardContent>
         <ListContextProvider
-          value={{ ...coursesContext, total: courses.total }}
+          value={{
+            ...coursesContext,
+            total: courses ? courses["courses_by_lecturer"].total : 0,
+          }}
         >
           <Datagrid bulkActionButtons={false}>
             <TextField source="id" label="Id" />
@@ -111,10 +114,8 @@ export default function CoursesByLecturerList({
               resource="courses"
               redirect={() => `lecturers/${id}/show`}
               mutationOptions={{
-                onSettled: (data, error, variable) => {
-                  console.log("onSettled was called");
-                  console.log("data: ", data);
-                  console.log("variable: ", variable);
+                onSuccess: async () => {
+                  await refetch();
                 },
               }}
             />

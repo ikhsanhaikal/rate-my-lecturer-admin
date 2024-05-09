@@ -1,4 +1,4 @@
-import { gql } from "@apollo/client";
+import { gql, useQuery } from "@apollo/client";
 import { Card, CardHeader, CardContent, Rating } from "@mui/material";
 import { useEffect, useState } from "react";
 import {
@@ -10,7 +10,24 @@ import {
   Pagination,
   useList,
 } from "react-admin";
-import { client } from "../../data-provider";
+
+const GET_REVIEWS_BY_LECTURER = gql`
+  query ($id: Int!, $page: Int, $limit: Int) {
+    reviews_by_lecturer(id: $id, page: $page, limit: $limit) {
+      data {
+        id
+        reviewer {
+          id
+          name
+          email
+        }
+        comment
+        rating
+      }
+      total
+    }
+  }
+`;
 export default function ReviewsByLecturerList({
   id,
 }: {
@@ -20,53 +37,38 @@ export default function ReviewsByLecturerList({
     page: 1,
     perPage: 5,
   });
-
-  const [reviews, setReviews] = useState({ data: [], total: 0, loading: true });
-  useEffect(() => {
-    (async function () {
-      const result = await client.query({
-        query: gql`
-          query ($id: Int!, $page: Int, $limit: Int) {
-            reviews_by_lecturer(id: $id, page: $page, limit: $limit) {
-              data {
-                id
-                reviewer {
-                  id
-                  name
-                  email
-                }
-                comment
-                rating
-              }
-              total
-            }
-          }
-        `,
-        variables: {
-          id: id,
-          limit: reviewPagination.perPage,
-          page: reviewPagination.page,
-        },
-      });
-
-      const data = result.data[`reviews_by_lecturer`].data;
-      const total = result.data[`reviews_by_lecturer`].total;
-      setReviews({ data, total, loading: result.loading });
-    })();
-  }, [reviewPagination, id]);
+  const {
+    loading,
+    error,
+    data: reviews,
+    refetch,
+  } = useQuery(GET_REVIEWS_BY_LECTURER, {
+    variables: {
+      id: id,
+      limit: reviewPagination.perPage,
+      page: reviewPagination.page,
+    },
+  });
 
   const reviewsContext = useList({
-    data: reviews.data,
+    data: reviews ? reviews["reviews_by_lecturer"].data : [],
     perPage: 5,
-    isLoading: reviews.loading,
+    isLoading: loading,
   });
+
+  if (loading) {
+    return <>loading..</>;
+  }
 
   return (
     <Card variant="outlined">
       <CardHeader title="Reviews" />
       <CardContent>
         <ListContextProvider
-          value={{ ...reviewsContext, total: reviews.total }}
+          value={{
+            ...reviewsContext,
+            total: reviews ? reviews["reviews_by_lecturer"].total : 0,
+          }}
         >
           <Datagrid bulkActionButtons={false}>
             <TextField source="reviewer.name" label="Name" />
@@ -76,17 +78,25 @@ export default function ReviewsByLecturerList({
               label="Rating"
               render={(record) => <Rating readOnly value={record.rating} />}
             />
-            <DeleteWithConfirmButton resource="reviews" redirect={false} />
+            <DeleteWithConfirmButton
+              resource="reviews"
+              redirect={false}
+              mutationOptions={{
+                onSuccess: async () => {
+                  await refetch();
+                },
+              }}
+            />
           </Datagrid>
           <Pagination
             page={reviewPagination.page}
             perPage={reviewPagination.perPage}
             setPage={(page) => {
-              console.log("setPage: ", page);
+              // console.log("setPage: ", page);
               setReviewPagination((old) => ({ ...old, page }));
             }}
             setPerPage={(perPage) => {
-              console.log("setPerPage: ", perPage);
+              // console.log("setPerPage: ", perPage);
               setReviewPagination((old) => ({ ...old, perPage }));
             }}
           />

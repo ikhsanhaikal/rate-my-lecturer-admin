@@ -20,6 +20,8 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import LecturerEdit from "./components/lecturers/lecturers.edit";
 import SubjectEdit from "./components/subjects/subject.edit";
 import CourseEdit from "./components/courses/courses.edit";
+import { ApolloProvider } from "@apollo/client";
+import { client as apolloClient } from "./data-provider";
 const Profile = () => {
   const [token, setToken] = useState("");
   useEffect(() => {
@@ -53,57 +55,59 @@ function App() {
   return (
     <BrowserRouter>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <Admin
-          disableTelemetry
-          i18nProvider={i18nProvider}
-          authProvider={authProvider}
-          dataProvider={dataProvider}
-          requireAuth={true}
-        >
-          {(permissions) => {
-            {
-              /* <Admin i18nProvider={i18nProvider} dataProvider={dataProvider}> */
-            }
-            return (
-              <>
-                <CustomRoutes>
-                  <Route path="/profile" element={<Profile />} />
-                  <Route
-                    path="/lecturers/:id/courses/create"
-                    element={<LecturerShow />}
+        <ApolloProvider client={apolloClient}>
+          <Admin
+            disableTelemetry
+            i18nProvider={i18nProvider}
+            authProvider={authProvider}
+            dataProvider={dataProvider}
+            requireAuth={true}
+          >
+            {(permissions) => {
+              {
+                /* <Admin i18nProvider={i18nProvider} dataProvider={dataProvider}> */
+              }
+              return (
+                <>
+                  <CustomRoutes>
+                    <Route path="/profile" element={<Profile />} />
+                    <Route
+                      path="/lecturers/:id/courses/create"
+                      element={<LecturerShow />}
+                    />
+                    <Route
+                      path="/lecturers/:id/courses/:cid/edit"
+                      element={<CourseEdit />}
+                    />
+                  </CustomRoutes>
+                  <Resource
+                    name="lecturers"
+                    list={LecturerList}
+                    show={LecturerShow}
+                    edit={LecturerEdit}
+                    create={LecturerCreate}
                   />
-                  <Route
-                    path="/lecturers/:id/courses/:cid/edit"
-                    element={<CourseEdit />}
+                  <Resource
+                    name="labs"
+                    list={LabList}
+                    show={LabShow}
+                    create={LabCreate}
+                    edit={<>Edit labs page</>}
                   />
-                </CustomRoutes>
-                <Resource
-                  name="lecturers"
-                  list={LecturerList}
-                  show={LecturerShow}
-                  edit={LecturerEdit}
-                  create={LecturerCreate}
-                />
-                <Resource
-                  name="labs"
-                  list={LabList}
-                  show={LabShow}
-                  create={LabCreate}
-                  edit={<>Edit labs page</>}
-                />
-                <Resource
-                  name="subjects"
-                  list={SubjectList}
-                  create={SubjectCreate}
-                  edit={SubjectEdit}
-                />
-                {permissions === "admin" ? (
-                  <Resource name="test" list={<></>} />
-                ) : null}
-              </>
-            );
-          }}
-        </Admin>
+                  <Resource
+                    name="subjects"
+                    list={SubjectList}
+                    create={SubjectCreate}
+                    edit={SubjectEdit}
+                  />
+                  {permissions === "admin" ? (
+                    <Resource name="test" list={<></>} />
+                  ) : null}
+                </>
+              );
+            }}
+          </Admin>
+        </ApolloProvider>
       </LocalizationProvider>
     </BrowserRouter>
   );
